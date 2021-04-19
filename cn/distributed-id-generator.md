@@ -48,7 +48,7 @@ ID还要尽可能**短**，节省内存，让数据库索引效率更高。基�
 
 假设用8台MySQL服务器协同工作，第一台MySQL初始值是1，每次自增8，第二台MySQL初始值是2，每次自增8，依次类推。前面用一个 round-robin load balancer 挡着，每来一个请求，由 round-robin balancer 随机地将请求发给8台MySQL中的任意一个，然后返回一个ID。
 
-[Flickr就是这么做的](http://code.flickr.net/2010/02/08/ticket-servers-distributed-unique-primary-keys-on-the-cheap/)，仅仅使用了两台MySQL服务器。可见这个方法虽然简单无脑，但是性能足够好。不过要注意，在MySQL中，不需要把所有ID都存下来，每台机器只需要存一个MAX_ID就可以了。这需要用到MySQL的一个[REPLACE INTO](http://dev.mysql.com/doc/refman/5.0/en/replace.html)特性。
+[Flickr就是这么做的](http://code.flickr.net/2010/02/08/ticket-servers-distributed-unique-primary-keys-on-the-cheap/) ，仅仅使用了两台MySQL服务器。可见这个方法虽然简单无脑，但是性能足够好。不过要注意，在MySQL中，不需要把所有ID都存下来，每台机器只需要存一个MAX_ID就可以了。这需要用到MySQL的一个[REPLACE INTO](http://dev.mysql.com/doc/refman/5.0/en/replace.html)特性。
 
 这个方法跟单台数据库比，缺点是**ID是不是严格递增的**，只是粗略递增的。不过这个问题不大，我们的目标是粗略有序，不需要严格递增。
 
@@ -56,7 +56,6 @@ ID还要尽可能**短**，节省内存，让数据库索引效率更高。基�
 ### Twitter Snowflake
 
 比如 Twitter 有个成熟的开源项目，就是专门生成ID的，[Twitter Snowflake](https://github.com/twitter/snowflake) 。Snowflake的核心算法如下：
-
 ![](http://121.40.136.3/wp-content/uploads/2015/04/snowflake-64bit.jpg)
 
 最高位不用，永远为0，其余三组bit占位均可浮动，看具体的业务需求而定。默认情况下41bit的时间戳可以支持该算法使用到2082年，10bit的工作机器id可以支持1023台机器，序列号支持1毫秒产生4095个自增序列id。
